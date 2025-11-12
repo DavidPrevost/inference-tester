@@ -50,6 +50,7 @@ models:
     size_b: 1.7
     repo: "bartowski/SmolLM2-1.7B-Instruct-GGUF"
     files:
+      Q2_K: "SmolLM2-1.7B-Instruct-Q2_K.gguf"
       Q3_K_M: "SmolLM2-1.7B-Instruct-Q3_K_M.gguf"
       Q4_K_M: "SmolLM2-1.7B-Instruct-Q4_K_M.gguf"
       Q5_K_M: "SmolLM2-1.7B-Instruct-Q5_K_M.gguf"
@@ -67,6 +68,7 @@ models:
     size_b: 2
     repo: "bartowski/gemma-2-2b-it-GGUF"
     files:
+      Q2_K: "gemma-2-2b-it-Q2_K.gguf"
       Q3_K_M: "gemma-2-2b-it-Q3_K_M.gguf"
       Q4_K_M: "gemma-2-2b-it-Q4_K_M.gguf"
       Q5_K_M: "gemma-2-2b-it-Q5_K_M.gguf"
@@ -81,6 +83,7 @@ models:
     size_b: 2.7
     repo: "bartowski/phi-2-GGUF"
     files:
+      Q2_K: "phi-2-Q2_K.gguf"
       Q3_K_M: "phi-2-Q3_K_M.gguf"
       Q4_K_M: "phi-2-Q4_K_M.gguf"
       Q5_K_M: "phi-2-Q5_K_M.gguf"
@@ -128,6 +131,7 @@ models:
     size_b: 3.8
     repo: "bartowski/Phi-3.5-mini-instruct-GGUF"
     files:
+      Q2_K: "Phi-3.5-mini-instruct-Q2_K.gguf"
       Q3_K_M: "Phi-3.5-mini-instruct-Q3_K_M.gguf"
       Q4_K_M: "Phi-3.5-mini-instruct-Q4_K_M.gguf"
       Q5_K_M: "Phi-3.5-mini-instruct-Q5_K_M.gguf"
@@ -175,6 +179,7 @@ models:
     size_b: 7
     repo: "bartowski/Mistral-7B-Instruct-v0.3-GGUF"
     files:
+      Q2_K: "Mistral-7B-Instruct-v0.3-Q2_K.gguf"
       Q3_K_M: "Mistral-7B-Instruct-v0.3-Q3_K_M.gguf"
       Q4_K_M: "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf"
       Q5_K_M: "Mistral-7B-Instruct-v0.3-Q5_K_M.gguf"
@@ -192,10 +197,12 @@ models:
     size_b: 12
     repo: "bartowski/Mistral-Nemo-Instruct-2407-GGUF"
     files:
+      Q2_K: "Mistral-Nemo-Instruct-2407-Q2_K.gguf"
       Q3_K_M: "Mistral-Nemo-Instruct-2407-Q3_K_M.gguf"
       Q4_K_M: "Mistral-Nemo-Instruct-2407-Q4_K_M.gguf"
       Q5_K_M: "Mistral-Nemo-Instruct-2407-Q5_K_M.gguf"
       Q6_K: "Mistral-Nemo-Instruct-2407-Q6_K.gguf"
+      Q8_0: "Mistral-Nemo-Instruct-2407-Q8_0.gguf"
     metadata:
       context_length: 131072
       notes: "12B model, good for testing upper limits of edge devices"
