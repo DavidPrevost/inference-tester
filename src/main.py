@@ -44,15 +44,61 @@ def parse_args():
 
     """
     parser = argparse.ArgumentParser(
-        description="Test practical performance limits of LLMs on edge devices",
+        description="""
+LLM Inference Tester - Comprehensive performance testing for LLMs on edge devices
+
+This tool tests Large Language Models on your hardware to determine which models
+and quantization levels work best for your specific use cases. It automatically
+tests multiple configurations and provides detailed recommendations.
+
+Features:
+  • Tests 5 different use-case profiles (interactive, batch, long context, quality, stress)
+  • Smart skipping saves hours by avoiding impossible configurations
+  • Comprehensive reports in JSON, CSV, and HTML formats
+  • Intelligent recommendations for your hardware
+  • Resume capability for long-running tests
+        """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --quick                    # Quick test (Q4/Q5 only, ~1 hour)
-  %(prog)s --full                     # Full test (all quants, ~2-4 hours)
-  %(prog)s --models "Llama-3.2-7B"    # Test specific model
-  %(prog)s --profiles interactive,batch  # Test specific profiles
-  %(prog)s --resume results/checkpoint.json  # Resume interrupted test
+  # Quick test with common quantizations (recommended for first run)
+  %(prog)s --quick
+
+  # Full comprehensive test (2-4 hours)
+  %(prog)s --full
+
+  # Test specific model only
+  %(prog)s --models "Llama-3.2-7B"
+
+  # Test specific use cases
+  %(prog)s --profiles interactive,batch --skip-stress
+
+  # Preview what would be tested without running
+  %(prog)s --dry-run
+
+  # Resume an interrupted test
+  %(prog)s --resume results/checkpoint.json
+
+  # Custom output location
+  %(prog)s --output-dir my-test-results
+
+Common Workflows:
+  1. First-time setup:
+     - Copy config.example.yaml to config.yaml
+     - Copy models.example.yaml to models.yaml
+     - Edit models.yaml to select models to test
+     - Run: %(prog)s --quick
+
+  2. Comprehensive testing:
+     - Run: %(prog)s --full
+     - Check results/report.html for detailed analysis
+     - Follow recommendations for your use cases
+
+  3. Targeted testing:
+     - Run: %(prog)s --models "Phi-3.5-mini" --profiles interactive
+     - Fast test of specific model for specific use case
+
+For more help and troubleshooting, see TROUBLESHOOTING.md
         """
     )
 

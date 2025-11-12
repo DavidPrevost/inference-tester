@@ -163,29 +163,88 @@ class ModelManager:
             from tqdm import tqdm
 
             logger.info("Downloading from HuggingFace: %s/%s", repo, filename)
+            logger.info("This may take a while depending on model size and connection speed...")
+            logger.info("Download will resume automatically if interrupted")
 
             downloaded_path = hf_hub_download(
                 repo_id=repo,
                 filename=filename,
                 cache_dir=None,  # Use default cache
                 local_dir=str(target_dir),
-                local_dir_use_symlinks=False
+                local_dir_use_symlinks=False,
+                resume_download=True  # Enable resume capability
             )
 
             final_path = Path(downloaded_path)
 
+            # Verify file exists and has reasonable size
+            if not final_path.exists():
+                raise RuntimeError("Download completed but file not found")
+
+            file_size_gb = final_path.stat().st_size / (1024**3)
+            if file_size_gb < 0.1:
+                raise RuntimeError(
+                    f"Downloaded file seems too small ({file_size_gb:.2f}GB). "
+                    "Download may be corrupted. Delete and try again."
+                )
+
             # Update available models
             self.available_models[(model_name, quant)] = final_path
 
-            logger.info("Successfully downloaded to %s", final_path)
+            logger.info("Successfully downloaded %s (%s) to %s", model_name, quant, final_path)
+            logger.info("File size: %.2f GB", file_size_gb)
             return final_path
 
         except ImportError:
             raise RuntimeError(
-                "huggingface_hub not available. Install with: pip install huggingface-hub"
+                "HuggingFace Hub library not available.\n"
+                "Install with: pip install huggingface-hub\n"
+                "Or check requirements.txt is installed: pip install -r requirements.txt"
             )
+        except FileNotFoundError:
+            raise RuntimeError(
+                f"Model file '{filename}' not found in repository '{repo}'.\n"
+                "Check that the model name and quantization level in models.yaml are correct.\n"
+                f"Visit https://huggingface.co/{repo} to see available files."
+            )
+        except PermissionError as e:
+            raise RuntimeError(
+                f"Permission denied writing to {target_dir}.\n"
+                "Check that you have write permissions for the model directory.\n"
+                f"Error: {e}"
+            )
+        except OSError as e:
+            if "No space left" in str(e):
+                raise RuntimeError(
+                    f"Insufficient disk space to download model.\n"
+                    f"Target: {target_dir}\n"
+                    "Free up space or change model_dir in config.yaml to a larger drive.\n"
+                    f"Error: {e}"
+                )
+            raise RuntimeError(f"OS error during download: {e}")
         except Exception as e:
-            raise RuntimeError(f"Failed to download model: {e}")
+            error_msg = str(e).lower()
+            if "connection" in error_msg or "timeout" in error_msg:
+                raise RuntimeError(
+                    f"Network error during download: {e}\n"
+                    "Check your internet connection and try again.\n"
+                    "Partial downloads will resume automatically."
+                )
+            elif "rate limit" in error_msg or "429" in error_msg:
+                raise RuntimeError(
+                    f"HuggingFace rate limit exceeded: {e}\n"
+                    "Wait a few minutes and try again, or:\n"
+                    "1. Login: huggingface-cli login\n"
+                    "2. Or set HF_TOKEN environment variable"
+                )
+            else:
+                raise RuntimeError(
+                    f"Failed to download model: {e}\n"
+                    f"Model: {model_name} ({quant})\n"
+                    f"Repository: {repo}\n"
+                    f"File: {filename}\n"
+                    "Check the error message above and TROUBLESHOOTING.md for help."
+                )
 
     def ensure_model(self, model_name: str, quant: str) -> Path:
         """Ensure a model is available, downloading if necessary.
