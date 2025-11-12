@@ -155,17 +155,22 @@ class ConfigManager:
         if "server_path" not in llama_config:
             raise ValueError("Missing required setting: llama_cpp.server_path")
 
+        # Validate and sanitize paths
+        self._validate_path(llama_config["server_path"], "llama_cpp.server_path")
+
         # Validate thresholds
         if "thresholds" not in self.config:
             raise ValueError("Missing required section: thresholds")
 
         # Validate model_dir exists or can be created
         model_dir = Path(self.config.get("model_dir", "./models"))
+        self._validate_path(model_dir, "model_dir", must_exist=False)
         if not model_dir.exists():
             logger.info("Model directory %s doesn't exist, will create it", model_dir)
 
         # Validate output dir exists or can be created
         output_dir = Path(self.config["output"]["dir"])
+        self._validate_path(output_dir, "output.dir", must_exist=False)
         if not output_dir.exists():
             logger.info("Output directory %s doesn't exist, will create it", output_dir)
 
@@ -174,7 +179,98 @@ class ConfigManager:
         if test_mode not in ["quick", "full"]:
             raise ValueError(f"Invalid test_mode: {test_mode}. Must be 'quick' or 'full'")
 
+        # Validate numeric ranges
+        self._validate_numeric_ranges()
+
         logger.debug("Configuration validation successful")
+
+    def _validate_path(self, path: Any, config_key: str, must_exist: bool = False):
+        """Validate a path from configuration.
+
+        Args:
+            path: Path to validate
+            config_key: Configuration key name (for error messages)
+            must_exist: Whether path must exist
+
+        Raises:
+            ValueError: If path is invalid
+
+        """
+        try:
+            path_obj = Path(path)
+
+            # Check for path traversal attempts
+            resolved = path_obj.resolve()
+            if ".." in str(path):
+                logger.warning(f"Path {config_key} contains '..': {path}")
+
+            # Check if must exist
+            if must_exist and not resolved.exists():
+                raise ValueError(f"{config_key} does not exist: {path}")
+
+        except Exception as e:
+            raise ValueError(f"Invalid path for {config_key}: {path} - {e}")
+
+    def _validate_numeric_ranges(self):
+        """Validate numeric configuration values are within reasonable ranges.
+
+        Raises:
+            ValueError: If any numeric value is out of range
+
+        """
+        llama_config = self.config.get("llama_cpp", {})
+
+        # Validate context size
+        ctx_size = llama_config.get("default_ctx_size", 8192)
+        if not isinstance(ctx_size, int) or ctx_size < 512 or ctx_size > 128000:
+            raise ValueError(
+                f"Invalid default_ctx_size: {ctx_size}. "
+                "Must be integer between 512 and 128000"
+            )
+
+        # Validate threads
+        threads = llama_config.get("default_threads")
+        if threads is not None:
+            if not isinstance(threads, int) or threads < 1 or threads > 256:
+                raise ValueError(
+                    f"Invalid default_threads: {threads}. "
+                    "Must be integer between 1 and 256, or None for auto"
+                )
+
+        # Validate GPU layers
+        gpu_layers = llama_config.get("gpu_layers", 0)
+        if not isinstance(gpu_layers, int) or gpu_layers < 0 or gpu_layers > 1000:
+            raise ValueError(
+                f"Invalid gpu_layers: {gpu_layers}. "
+                "Must be non-negative integer (max 1000)"
+            )
+
+        # Validate port range
+        advanced = self.config.get("advanced", {})
+        port_start = advanced.get("port_range_start", 8080)
+        port_end = advanced.get("port_range_end", 8180)
+
+        if not isinstance(port_start, int) or port_start < 1024 or port_start > 65535:
+            raise ValueError(
+                f"Invalid port_range_start: {port_start}. "
+                "Must be between 1024 and 65535"
+            )
+
+        if not isinstance(port_end, int) or port_end < port_start or port_end > 65535:
+            raise ValueError(
+                f"Invalid port_range_end: {port_end}. "
+                "Must be between port_range_start and 65535"
+            )
+
+        # Validate memory limits
+        limits = self.config.get("limits", {})
+        max_memory = limits.get("max_memory_gb")
+        if max_memory is not None:
+            if not isinstance(max_memory, (int, float)) or max_memory < 1 or max_memory > 1024:
+                raise ValueError(
+                    f"Invalid max_memory_gb: {max_memory}. "
+                    "Must be between 1 and 1024 GB"
+                )
 
     def get(self, key: str, default: Any = None) -> Any:
         """Get a configuration value.
@@ -224,6 +320,21 @@ class ConfigManager:
         """
         thresholds = self.config.get("thresholds", {})
         return thresholds.get(profile, {})
+
+    def get_profile_config(self, profile_name: str) -> Dict[str, Any]:
+        """Get complete configuration for a test profile.
+
+        Args:
+            profile_name: Name of the profile
+
+        Returns:
+            Dictionary containing profile configuration including thresholds
+
+        """
+        return {
+            "thresholds": self.get_thresholds(profile_name),
+            "test_data_path": self.config.get("test_data_path", "data/quality_tests.json")
+        }
 
     def get_quants_for_mode(self, mode: Optional[str] = None) -> List[str]:
         """Get list of quantization levels to test for given mode.

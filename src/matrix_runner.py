@@ -112,6 +112,15 @@ class MatrixRunner:
 
         # Execute tests
         for i, config in enumerate(test_configs):
+            # Check for graceful shutdown request
+            from shutdown import is_shutdown_requested
+            if is_shutdown_requested():
+                logger.info("\n=== Shutdown requested - saving progress and exiting ===")
+                if self.checkpoint_file:
+                    self._save_checkpoint()
+                logger.info(f"Progress saved. Completed {len(self.test_runs)} tests.")
+                break
+
             logger.info(
                 f"\n=== Test {i+1}/{len(test_configs)}: "
                 f"{config.model_name} {config.quant} - {config.profile_name} ==="
@@ -356,6 +365,7 @@ class MatrixRunner:
                 timestamp=timestamp
             )
 
+        connection = None
         try:
             # Ensure model is available
             logger.info(f"Ensuring model {config.model_name} ({config.quant}) is available...")
@@ -391,10 +401,6 @@ class MatrixRunner:
             profile_config = self.config_mgr.get_profile_config(config.profile_name)
             result = profile.run(connection.url, profile_config)
 
-            # Stop server
-            logger.info("Stopping server...")
-            self.server_mgr.stop()
-
             duration = time.time() - start_time
 
             return TestRun(
@@ -413,12 +419,6 @@ class MatrixRunner:
         except Exception as e:
             logger.error(f"Test failed: {e}", exc_info=True)
 
-            # Make sure server is stopped
-            try:
-                self.server_mgr.stop()
-            except Exception:
-                pass
-
             duration = time.time() - start_time
 
             # Mark this model/quant as failed
@@ -436,6 +436,15 @@ class MatrixRunner:
                 duration_seconds=duration,
                 timestamp=timestamp
             )
+
+        finally:
+            # Always stop server if it was started
+            if connection is not None:
+                try:
+                    logger.info("Stopping server...")
+                    self.server_mgr.stop()
+                except Exception as e:
+                    logger.warning(f"Error stopping server: {e}")
 
     def _analyze_failure(self, config: TestConfiguration, test_run: TestRun):
         """Analyze a test failure to inform future skipping decisions.

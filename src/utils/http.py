@@ -18,9 +18,10 @@ def send_completion_request(
     max_tokens: int = 512,
     temperature: float = 0.7,
     stream: bool = False,
-    timeout: int = 300
+    timeout: int = 300,
+    max_retries: int = 3
 ) -> Dict[str, Any]:
-    """Send a completion request to llama.cpp server.
+    """Send a completion request to llama.cpp server with retry logic.
 
     Args:
         server_url: Base URL of the server
@@ -29,25 +30,30 @@ def send_completion_request(
         temperature: Sampling temperature
         stream: Whether to stream the response
         timeout: Request timeout in seconds
+        max_retries: Maximum number of retry attempts
 
     Returns:
         Response dictionary
 
     Raises:
-        RuntimeError: If request fails
+        RuntimeError: If request fails after all retries
 
     """
     try:
         import requests
+    except ImportError:
+        logger.error("requests library not available")
+        raise RuntimeError("requests library required")
 
-        endpoint = f"{server_url}/completion"
-        payload = {
-            "prompt": prompt,
-            "n_predict": max_tokens,
-            "temperature": temperature,
-            "stream": stream
-        }
+    endpoint = f"{server_url}/completion"
+    payload = {
+        "prompt": prompt,
+        "n_predict": max_tokens,
+        "temperature": temperature,
+        "stream": stream
+    }
 
+    def _make_request():
         response = requests.post(
             endpoint,
             json=payload,
@@ -61,11 +67,10 @@ def send_completion_request(
         else:
             return response.json()
 
-    except ImportError:
-        logger.error("requests library not available")
-        raise RuntimeError("requests library required")
+    try:
+        return retry_request(_make_request, max_attempts=max_retries)
     except Exception as e:
-        logger.error("Completion request failed: %s", e)
+        logger.error("Completion request failed after %d attempts: %s", max_retries, e)
         raise RuntimeError(f"Request failed: {e}")
 
 
@@ -128,12 +133,13 @@ def stream_completion(
         raise RuntimeError(f"Streaming failed: {e}")
 
 
-def check_health(server_url: str, timeout: int = 5) -> bool:
-    """Check if server is healthy and responsive.
+def check_health(server_url: str, timeout: int = 5, max_retries: int = 2) -> bool:
+    """Check if server is healthy and responsive with retry logic.
 
     Args:
         server_url: Base URL of the server
         timeout: Request timeout in seconds
+        max_retries: Maximum number of retry attempts
 
     Returns:
         True if server is healthy, False otherwise
@@ -141,15 +147,22 @@ def check_health(server_url: str, timeout: int = 5) -> bool:
     """
     try:
         import requests
-
-        endpoint = f"{server_url}/health"
-        response = requests.get(endpoint, timeout=timeout)
-        return response.status_code == 200
     except ImportError:
         logger.error("requests library not available")
         return False
+
+    endpoint = f"{server_url}/health"
+
+    def _check():
+        response = requests.get(endpoint, timeout=timeout)
+        if response.status_code != 200:
+            raise RuntimeError(f"Health check returned status {response.status_code}")
+        return True
+
+    try:
+        return retry_request(_check, max_attempts=max_retries, delay=0.5)
     except Exception as e:
-        logger.debug("Health check failed: %s", e)
+        logger.debug("Health check failed after %d attempts: %s", max_retries, e)
         return False
 
 

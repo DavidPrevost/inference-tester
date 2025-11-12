@@ -7,8 +7,28 @@ through model testing to report generation.
 
 import argparse
 import logging
+import signal
 import sys
 from pathlib import Path
+
+from shutdown import is_shutdown_requested, request_shutdown
+
+
+def signal_handler(signum, frame):
+    """Handle interrupt signals for graceful shutdown.
+
+    Args:
+        signum: Signal number
+        frame: Current stack frame
+
+    """
+    if not is_shutdown_requested():
+        request_shutdown()
+        print("\n\nShutdown requested. Finishing current test and saving progress...")
+        print("Press Ctrl+C again to force quit (may lose data)")
+    else:
+        print("\nForce quitting...")
+        sys.exit(1)
 
 
 def setup_logging(level: str = "INFO", log_file: Path = None):
@@ -194,6 +214,10 @@ For more help and troubleshooting, see TROUBLESHOOTING.md
 
 def main():
     """Main entry point for the CLI."""
+    # Register signal handlers for graceful shutdown
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
     args = parse_args()
 
     # Set up logging
