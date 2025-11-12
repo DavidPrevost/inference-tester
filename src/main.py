@@ -164,7 +164,6 @@ def main():
         from config_manager import ConfigManager
         from model_manager import ModelManager
         from server_manager import ServerManager
-        from test_profiles import get_profile
 
         # Load configuration
         logger.info("Loading configuration...")
@@ -195,90 +194,102 @@ def main():
         ctx_size = config_mgr.get("llama_cpp.default_ctx_size")
         server_mgr = ServerManager(server_path, default_ctx_size=ctx_size)
 
-        # For Phase 2 proof of concept: Test with first available model
-        # In future phases, this will iterate through the test matrix
-        models = config_mgr.get_models()
-        if not models:
-            logger.error("No models defined in configuration")
-            return 1
+        # Parse model/quant/profile filters
+        models = args.models.split(",") if args.models else None
+        quants = args.quants.split(",") if args.quants else None
+        profiles = args.profiles.split(",") if args.profiles else None
 
-        # Use first model at Q4_K_M (common sweet spot)
-        test_model = models[0]
-        test_quant = "Q4_K_M"
+        # Handle skip flags
+        if args.skip_quality and profiles:
+            profiles = [p for p in profiles if p != "quality"]
+        if args.skip_stress and profiles:
+            profiles = [p for p in profiles if p != "stress"]
 
+        # Dry run: show what would be tested
+        if args.dry_run:
+            logger.info("=" * 60)
+            logger.info("DRY RUN - No tests will be executed")
+            logger.info("=" * 60)
+            from matrix_runner import MatrixRunner
+            runner = MatrixRunner(config_mgr, model_mgr, server_mgr)
+            test_configs = runner._build_test_matrix(models, quants, profiles)
+
+            logger.info(f"Would run {len(test_configs)} test configurations:")
+            for i, config in enumerate(test_configs[:20]):  # Show first 20
+                logger.info(
+                    f"  {i+1}. {config.model_name} {config.quant} - {config.profile_name}"
+                )
+            if len(test_configs) > 20:
+                logger.info(f"  ... and {len(test_configs) - 20} more")
+            return 0
+
+        # Initialize matrix runner
         logger.info("=" * 60)
-        logger.info("Phase 2 Proof of Concept Test")
-        logger.info("Model: %s", test_model["name"])
-        logger.info("Quantization: %s", test_quant)
+        logger.info("Starting Matrix Test Run")
         logger.info("=" * 60)
 
-        # Ensure model is available
-        logger.info("Ensuring model is available...")
-        try:
-            model_path = model_mgr.ensure_model(test_model["name"], test_quant)
-            logger.info("Model ready at: %s", model_path)
-        except Exception as e:
-            logger.error("Failed to get model: %s", e)
-            logger.info("This is expected if the model hasn't been downloaded yet.")
-            logger.info("In a full implementation, the tool would download it automatically.")
-            return 1
+        from matrix_runner import MatrixRunner
+        runner = MatrixRunner(config_mgr, model_mgr, server_mgr)
 
-        # Start server
-        logger.info("Starting llama.cpp server...")
-        try:
-            connection = server_mgr.start(model_path)
-            logger.info("Server started at: %s", connection.url)
+        # Setup checkpoint path
+        checkpoint_path = args.resume
+        if not checkpoint_path and args.output_dir:
+            checkpoint_path = args.output_dir / "checkpoint.json"
 
-            # Run interactive profile test
-            logger.info("Running interactive test profile...")
-            profile = get_profile("interactive")
+        # Run the matrix
+        test_runs = runner.run_matrix(
+            models=models,
+            quants=quants,
+            profiles=profiles,
+            checkpoint_path=str(checkpoint_path) if checkpoint_path else None
+        )
 
-            # Get profile config
-            profile_config = {
-                "thresholds": config_mgr.get_thresholds("interactive")
-            }
+        # Get summary
+        summary = runner.get_results_summary()
 
-            # Run test
-            result = profile.run(connection.url, profile_config)
-
-            # Display results
-            logger.info("=" * 60)
-            logger.info("TEST RESULTS")
-            logger.info("=" * 60)
-            logger.info("Profile: %s", result.profile)
-            logger.info("Status: %s", result.status)
-            logger.info("Passed: %s", result.passed)
-            logger.info("")
-            logger.info("Metrics:")
-            for key, value in result.metrics.items():
-                logger.info("  %s: %.2f", key, value)
-
-            if result.interpretation:
-                logger.info("")
-                logger.info("Interpretations:")
-                for key, interp in result.interpretation.items():
-                    logger.info("  %s: %s", key, interp)
-
-            logger.info("=" * 60)
-
-            if result.passed:
-                logger.info("✓ Test PASSED")
-                return_code = 0
-            else:
-                logger.warning("✗ Test FAILED")
-                return_code = 1
-
-        finally:
-            # Always stop the server
-            logger.info("Stopping server...")
-            server_mgr.stop()
-            logger.info("Server stopped")
-
+        # Display results
+        logger.info("\n" + "=" * 60)
+        logger.info("MATRIX TEST RESULTS")
+        logger.info("=" * 60)
+        logger.info(f"Total tests: {summary['total_tests']}")
+        logger.info(f"Passed: {summary['passed']}")
+        logger.info(f"Failed: {summary['failed']}")
+        logger.info(f"Skipped: {summary['skipped']}")
         logger.info("")
-        logger.info("Phase 2 proof of concept complete!")
-        logger.info("Next: Implement full matrix testing and all profiles")
+        logger.info("Results by status:")
+        for status, count in summary['by_status'].items():
+            logger.info(f"  {status}: {count}")
 
-        return return_code
+        if summary['best_configs']:
+            logger.info("")
+            logger.info("Best performing configurations:")
+            for config in summary['best_configs']:
+                logger.info(
+                    f"  ✓ {config['model']} {config['quant']} - "
+                    f"{config['profile']}: {config['status']}"
+                )
+
+        # Save results
+        output_dir = args.output_dir or Path(config_mgr.get("output.directory", "results"))
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save JSON results
+        import json
+        from dataclasses import asdict
+        results_file = output_dir / "results.json"
+        with open(results_file, 'w') as f:
+            json.dump({
+                "summary": summary,
+                "test_runs": [asdict(run) for run in test_runs]
+            }, f, indent=2)
+        logger.info(f"\nResults saved to: {results_file}")
+
+        logger.info("\n" + "=" * 60)
+        logger.info("Matrix testing complete!")
+        logger.info("=" * 60)
+
+        # Return success if any tests passed
+        return 0 if summary['passed'] > 0 else 1
 
     except FileNotFoundError as e:
         logger.error("Configuration error: %s", e)
