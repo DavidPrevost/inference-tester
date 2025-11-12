@@ -269,24 +269,72 @@ def main():
                     f"{config['profile']}: {config['status']}"
                 )
 
-        # Save results
+        # Save results in multiple formats
         output_dir = args.output_dir or Path(config_mgr.get("output.directory", "results"))
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save JSON results
+        logger.info("\n" + "=" * 60)
+        logger.info("Generating Reports")
+        logger.info("=" * 60)
+
+        # Import reporting modules
         import json
         from dataclasses import asdict
+        from reports import CSVFormatter, HTMLGenerator, RecommendationEngine
+
+        # Convert test runs to dictionaries
+        test_runs_dict = [asdict(run) for run in test_runs]
+
+        # Generate recommendations
+        logger.info("Generating recommendations...")
+        recommendations = RecommendationEngine.generate_recommendations(test_runs_dict, summary)
+
+        # Save JSON results
+        logger.info("Saving JSON results...")
         results_file = output_dir / "results.json"
         with open(results_file, 'w') as f:
             json.dump({
                 "summary": summary,
-                "test_runs": [asdict(run) for run in test_runs]
+                "test_runs": test_runs_dict,
+                "recommendations": recommendations
             }, f, indent=2)
-        logger.info(f"\nResults saved to: {results_file}")
+        logger.info(f"  ✓ JSON: {results_file}")
+
+        # Save CSV results
+        logger.info("Saving CSV results...")
+        csv_file = output_dir / "results.csv"
+        CSVFormatter.write_results(test_runs_dict, csv_file)
+        logger.info(f"  ✓ CSV: {csv_file}")
+
+        # Save CSV summary
+        summary_csv = output_dir / "summary.csv"
+        CSVFormatter.write_summary(summary, summary_csv)
+        logger.info(f"  ✓ Summary CSV: {summary_csv}")
+
+        # Save best configs CSV
+        if summary.get('best_configs'):
+            best_csv = output_dir / "best_configs.csv"
+            CSVFormatter.write_best_configs(summary['best_configs'], best_csv)
+            logger.info(f"  ✓ Best Configs CSV: {best_csv}")
+
+        # Generate HTML report
+        logger.info("Generating HTML report...")
+        html_file = output_dir / "report.html"
+        HTMLGenerator.generate_report(test_runs_dict, summary, recommendations, html_file)
+        logger.info(f"  ✓ HTML Report: {html_file}")
+
+        # Display recommendations
+        if recommendations:
+            logger.info("\n" + "=" * 60)
+            logger.info("RECOMMENDATIONS")
+            logger.info("=" * 60)
+            for i, rec in enumerate(recommendations, 1):
+                logger.info(f"{i}. {rec}")
 
         logger.info("\n" + "=" * 60)
         logger.info("Matrix testing complete!")
         logger.info("=" * 60)
+        logger.info(f"\nAll reports saved to: {output_dir.absolute()}")
 
         # Return success if any tests passed
         return 0 if summary['passed'] > 0 else 1
