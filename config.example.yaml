@@ -1,0 +1,141 @@
+# LLM Inference Tester - Configuration File
+# Copy this file to config.yaml and customize for your environment
+
+# ============================================================================
+# llama.cpp Configuration
+# ============================================================================
+llama_cpp:
+  # Path to llama-server binary
+  # Examples:
+  #   - ./llama-server (in current directory)
+  #   - /usr/local/bin/llama-server (system installation)
+  #   - ~/llama.cpp/build/bin/llama-server (built from source)
+  server_path: "./llama-server"
+
+  # Default context size for models (in tokens)
+  # Larger values allow more context but use more memory
+  default_ctx_size: 8192
+
+  # Number of threads to use (null = auto-detect)
+  default_threads: null
+
+  # GPU layers to offload (0 = CPU only, future feature)
+  gpu_layers: 0
+
+# ============================================================================
+# Test Execution Mode
+# ============================================================================
+# Options:
+#   "quick" - Test Q4_K_M and Q5_K_M only (~1 hour)
+#   "full"  - Test all quantizations (~2-4 hours)
+test_mode: "full"
+
+# Path to checkpoint file for resuming interrupted tests
+# Set to null to start fresh
+resume_from: null
+
+# ============================================================================
+# Test Profiles
+# ============================================================================
+# Which test profiles to run
+# Comment out profiles you want to skip
+profiles:
+  - interactive      # TTFT and streaming speed
+  - long_context     # Large context handling
+  - batch            # Document processing throughput
+  - quality          # Accuracy tests (optional)
+  - stress           # Sustained load testing (optional)
+
+# ============================================================================
+# Performance Thresholds
+# ============================================================================
+# Adjust these values based on your requirements
+# Tests are classified based on how well they meet these thresholds
+
+thresholds:
+  # Interactive storytelling profile
+  interactive:
+    min_tokens_per_sec: 2          # Minimum acceptable tokens/sec
+    max_time_to_first_token: 30    # Maximum TTFT in seconds
+    max_variance: 20               # Maximum variance percentage
+
+  # Long context profile
+  long_context:
+    max_initial_load_time: 60      # Maximum context load time in seconds
+    # Context sizes to test (in tokens)
+    test_sizes: [4096, 8192, 16384, 32768]
+
+  # Batch processing profile
+  batch:
+    max_variance: 20               # Maximum variance percentage
+    num_documents: 30              # Number of documents to process
+
+  # Quality/accuracy profile
+  quality:
+    min_math_score: 80             # Minimum math accuracy percentage
+    min_comprehension_score: 75    # Minimum comprehension percentage
+    min_reasoning_score: 75        # Minimum reasoning percentage
+    min_format_compliance: 90      # Minimum format compliance percentage
+
+  # Stress testing profile
+  stress:
+    duration: 30                   # Test duration in minutes
+    max_temperature: 85            # Maximum CPU temperature in Celsius
+    sample_interval: 30            # Sampling interval in seconds
+
+# ============================================================================
+# Resource Limits
+# ============================================================================
+limits:
+  # Skip tests if model would require more than this amount of RAM
+  max_memory_gb: 14
+
+  # Maximum time to wait for model to load (seconds)
+  max_load_time: 300  # 5 minutes
+
+  # Allow swapping to disk? (false = abort if swapping detected)
+  allow_swap: false
+
+# ============================================================================
+# Model Storage
+# ============================================================================
+# Directory where model files are stored
+model_dir: "./models"
+
+# ============================================================================
+# Output Configuration
+# ============================================================================
+output:
+  # Directory for test results
+  dir: "./results"
+
+  # Output formats to generate
+  # Options: "json", "csv", "html"
+  formats: ["json", "csv", "html"]
+
+  # Include server logs in output?
+  include_logs: true
+
+# ============================================================================
+# Logging
+# ============================================================================
+logging:
+  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+
+  # Log file path
+  file: "inference-tester.log"
+
+# ============================================================================
+# Advanced Options
+# ============================================================================
+advanced:
+  # Port range for llama-server instances
+  port_range_start: 8080
+  port_range_end: 8180
+
+  # Enable colored output in terminal
+  color_output: true
+
+  # Show progress bars
+  show_progress: true

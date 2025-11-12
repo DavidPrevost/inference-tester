@@ -1,0 +1,142 @@
+# LLM Inference Tester - Models Configuration
+# Copy this file to models.yaml and customize for your needs
+
+# ============================================================================
+# Model Definitions
+# ============================================================================
+# Each model entry specifies:
+#   - name: Display name for the model
+#   - size: Size category (1B, 3B, 7B, 13B, etc.) for organization
+#   - repo: HuggingFace repository containing GGUF files
+#   - files: Mapping of quantization levels to filenames
+#   - metadata: (optional) Additional model information
+
+models:
+  # ========================================================================
+  # 1B Models - Smallest, fastest, good for testing infrastructure
+  # ========================================================================
+  - name: "Qwen2.5-1.5B-Instruct"
+    size: "1B"
+    repo: "Qwen/Qwen2.5-1.5B-Instruct-GGUF"
+    files:
+      Q2_K: "qwen2.5-1.5b-instruct-q2_k.gguf"
+      Q3_K_M: "qwen2.5-1.5b-instruct-q3_k_m.gguf"
+      Q4_K_M: "qwen2.5-1.5b-instruct-q4_k_m.gguf"
+      Q5_K_M: "qwen2.5-1.5b-instruct-q5_k_m.gguf"
+      Q6_K: "qwen2.5-1.5b-instruct-q6_k.gguf"
+      Q8_0: "qwen2.5-1.5b-instruct-q8_0.gguf"
+    metadata:
+      context_length: 131072
+      notes: "Good small model with large context window"
+
+  # ========================================================================
+  # 3B Models - Balanced size, good performance-to-resource ratio
+  # ========================================================================
+  - name: "Phi-3.5-mini-instruct"
+    size: "3B"
+    repo: "microsoft/Phi-3.5-mini-instruct-gguf"
+    files:
+      Q4_K_M: "Phi-3.5-mini-instruct-q4.gguf"
+      Q5_K_M: "Phi-3.5-mini-instruct-q5.gguf"
+      Q6_K: "Phi-3.5-mini-instruct-q6.gguf"
+      Q8_0: "Phi-3.5-mini-instruct-q8.gguf"
+    metadata:
+      context_length: 128000
+      notes: "Microsoft Phi 3.5, excellent quality for size"
+
+  - name: "Llama-3.2-3B-Instruct"
+    size: "3B"
+    repo: "lmstudio-community/Llama-3.2-3B-Instruct-GGUF"
+    files:
+      Q4_K_M: "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+      Q5_K_M: "Llama-3.2-3B-Instruct-Q5_K_M.gguf"
+      Q6_K: "Llama-3.2-3B-Instruct-Q6_K.gguf"
+      Q8_0: "Llama-3.2-3B-Instruct-Q8_0.gguf"
+    metadata:
+      context_length: 131072
+      notes: "Latest Llama 3.2, good general purpose"
+
+  # ========================================================================
+  # 7B Models - Popular size, good balance of capability and requirements
+  # ========================================================================
+  - name: "Llama-3.2-7B-Instruct"
+    size: "7B"
+    repo: "lmstudio-community/Llama-3.2-7B-Instruct-GGUF"
+    files:
+      Q2_K: "Llama-3.2-7B-Instruct-Q2_K.gguf"
+      Q3_K_M: "Llama-3.2-7B-Instruct-Q3_K_M.gguf"
+      Q4_K_M: "Llama-3.2-7B-Instruct-Q4_K_M.gguf"
+      Q5_K_M: "Llama-3.2-7B-Instruct-Q5_K_M.gguf"
+      Q6_K: "Llama-3.2-7B-Instruct-Q6_K.gguf"
+      Q8_0: "Llama-3.2-7B-Instruct-Q8_0.gguf"
+    metadata:
+      context_length: 131072
+      notes: "Latest Llama 3.2 7B, versatile and capable"
+
+  - name: "Mistral-7B-Instruct-v0.3"
+    size: "7B"
+    repo: "TheBloke/Mistral-7B-Instruct-v0.3-GGUF"
+    files:
+      Q4_K_M: "mistral-7b-instruct-v0.3.Q4_K_M.gguf"
+      Q5_K_M: "mistral-7b-instruct-v0.3.Q5_K_M.gguf"
+      Q6_K: "mistral-7b-instruct-v0.3.Q6_K.gguf"
+      Q8_0: "mistral-7b-instruct-v0.3.Q8_0.gguf"
+    metadata:
+      context_length: 32768
+      notes: "Mistral v0.3, known for good performance"
+
+  # ========================================================================
+  # 13B Models - Larger, more capable, higher resource requirements
+  # ========================================================================
+  - name: "Llama-2-13B-Chat"
+    size: "13B"
+    repo: "TheBloke/Llama-2-13B-Chat-GGUF"
+    files:
+      Q3_K_M: "llama-2-13b-chat.Q3_K_M.gguf"
+      Q4_K_M: "llama-2-13b-chat.Q4_K_M.gguf"
+      Q5_K_M: "llama-2-13b-chat.Q5_K_M.gguf"
+    metadata:
+      context_length: 4096
+      notes: "Baseline 13B for testing resource limits"
+
+# ============================================================================
+# Test Mode Configurations
+# ============================================================================
+# In quick mode, only test these quantization levels
+# This significantly reduces test time
+quick_mode_quants: ["Q4_K_M", "Q5_K_M"]
+
+# In full mode, test all defined quantizations
+full_mode_quants: ["Q2_K", "Q3_K_M", "Q4_K_M", "Q5_K_M", "Q6_K", "Q8_0"]
+
+# ============================================================================
+# Notes on Model Selection
+# ============================================================================
+# - Start with smaller models (1B-3B) to verify your setup works
+# - 7B models are the sweet spot for many use cases on edge devices
+# - 13B+ models may exceed memory limits on 16GB systems, especially at higher quants
+# - Q4_K_M is often the best balance of quality and size
+# - Q8_0 preserves more quality but requires ~2x storage and memory vs Q4
+# - Q2_K/Q3_K save space but may degrade quality significantly
+
+# ============================================================================
+# Adding Your Own Models
+# ============================================================================
+# To add a new model:
+# 1. Find the model on HuggingFace (search for "GGUF")
+# 2. Note the repo name (username/repo-name)
+# 3. Look at the files to find GGUF filenames
+# 4. Add an entry following the format above
+# 5. The tool will download the model automatically when needed
+
+# Example of adding a custom model:
+#
+# - name: "My-Custom-Model-7B"
+#   size: "7B"
+#   repo: "username/my-custom-model-GGUF"
+#   files:
+#     Q4_K_M: "my-custom-model-q4_k_m.gguf"
+#     Q5_K_M: "my-custom-model-q5_k_m.gguf"
+#   metadata:
+#     context_length: 8192
+#     notes: "Custom fine-tuned model for specific use case"
