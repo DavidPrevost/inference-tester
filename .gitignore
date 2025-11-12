@@ -75,6 +75,9 @@ results/
 # Keep results directory structure
 !results/.gitkeep
 
+# Keep quality test data (part of the tool)
+!data/quality_tests.json
+
 # Configuration files (user-specific)
 config.yaml
 models.yaml

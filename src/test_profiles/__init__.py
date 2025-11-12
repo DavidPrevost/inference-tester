@@ -7,17 +7,20 @@ Each profile tests specific aspects of performance relevant to its use case.
 import logging
 
 from test_profiles.interactive import InteractiveProfile
+from test_profiles.long_context import LongContextProfile
+from test_profiles.batch import BatchProfile
+from test_profiles.quality import QualityProfile
+from test_profiles.stress import StressProfile
 
 logger = logging.getLogger(__name__)
 
-# Profile registry - populated as profiles are implemented
+# Profile registry - all profiles implemented
 PROFILES = {
     "interactive": InteractiveProfile,
-    # Other profiles will be added as they're implemented
-    # "long_context": LongContextProfile,
-    # "batch": BatchProfile,
-    # "quality": QualityProfile,
-    # "stress": StressProfile,
+    "long_context": LongContextProfile,
+    "batch": BatchProfile,
+    "quality": QualityProfile,
+    "stress": StressProfile,
 }
 
 

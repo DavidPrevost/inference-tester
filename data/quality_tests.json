@@ -1,0 +1,127 @@
+{
+  "tests": [
+    {
+      "id": "math_1",
+      "category": "math",
+      "prompt": "A baker makes 24 cupcakes. She sells 3/4 of them in the morning. How many cupcakes does she have left? Answer with just the number.",
+      "expected_answer": "6",
+      "scoring_type": "numeric",
+      "weight": 1.0
+    },
+    {
+      "id": "math_2",
+      "category": "math",
+      "prompt": "If you invest $1000 at 5% annual interest, how much will you have after 2 years with simple interest? Answer with just the dollar amount (no $ symbol).",
+      "expected_answer": "1100",
+      "scoring_type": "numeric",
+      "tolerance": 0.01,
+      "weight": 1.0
+    },
+    {
+      "id": "math_3",
+      "category": "math",
+      "prompt": "You have a debt of $5000 at 3% annual interest. If you pay $200 per month, approximately how many months will it take to pay off? Round to the nearest month. Answer with just the number.",
+      "expected_answer": "26",
+      "scoring_type": "numeric",
+      "tolerance": 1,
+      "weight": 1.0
+    },
+    {
+      "id": "math_4",
+      "category": "math",
+      "prompt": "What is 15% of 240? Answer with just the number.",
+      "expected_answer": "36",
+      "scoring_type": "numeric",
+      "weight": 1.0
+    },
+    {
+      "id": "comprehension_1",
+      "category": "comprehension",
+      "prompt": "Read the following: 'The library closes at 8 PM on weekdays and 6 PM on weekends. Special events may extend hours.' Question: Can you visit the library at 7 PM on a Tuesday? Answer only 'yes' or 'no'.",
+      "expected_answer": "yes",
+      "scoring_type": "contains",
+      "weight": 1.0
+    },
+    {
+      "id": "comprehension_2",
+      "category": "comprehension",
+      "prompt": "Read: 'Maria has been studying French for 3 years and Spanish for 5 years. She recently started learning Italian.' Question: Which language has Maria studied the longest? Answer with just the language name.",
+      "expected_answer": "Spanish",
+      "scoring_type": "contains",
+      "weight": 1.0
+    },
+    {
+      "id": "comprehension_3",
+      "category": "comprehension",
+      "prompt": "Read: 'The experiment was conducted over 6 months with 200 participants. Results showed a 23% improvement in the treatment group compared to control.' Question: How many total months did the experiment run? Answer with just the number.",
+      "expected_answer": "6",
+      "scoring_type": "numeric",
+      "weight": 1.0
+    },
+    {
+      "id": "comprehension_4",
+      "category": "comprehension",
+      "prompt": "Read: 'To reset your password, click 'Forgot Password', enter your email, and check your inbox. The reset link expires in 24 hours.' Question: How long is the reset link valid? Answer with the number of hours.",
+      "expected_answer": "24",
+      "scoring_type": "numeric",
+      "weight": 1.0
+    },
+    {
+      "id": "reasoning_1",
+      "category": "reasoning",
+      "prompt": "All roses are flowers. Some flowers fade quickly. Can we conclude that all roses fade quickly? Answer only 'yes' or 'no'.",
+      "expected_answer": "no",
+      "scoring_type": "contains",
+      "weight": 1.0
+    },
+    {
+      "id": "reasoning_2",
+      "category": "reasoning",
+      "prompt": "If it rains, the ground gets wet. The ground is wet. Can we conclude it rained? Answer only 'yes' or 'no'.",
+      "expected_answer": "no",
+      "scoring_type": "contains",
+      "weight": 1.0
+    },
+    {
+      "id": "reasoning_3",
+      "category": "reasoning",
+      "prompt": "A train leaves at 2:00 PM and arrives at 5:30 PM. The journey is 280 miles. What was the average speed in miles per hour? Answer with just the number.",
+      "expected_answer": "80",
+      "scoring_type": "numeric",
+      "tolerance": 1,
+      "weight": 1.0
+    },
+    {
+      "id": "reasoning_4",
+      "category": "reasoning",
+      "prompt": "You have 3 red balls, 4 blue balls, and 5 green balls in a bag. If you randomly pick one ball, which color are you most likely to pick? Answer with just the color.",
+      "expected_answer": "green",
+      "scoring_type": "contains",
+      "weight": 1.0
+    },
+    {
+      "id": "format_1",
+      "category": "format",
+      "prompt": "List three primary colors in JSON format as an array with a key 'colors'. Return only the JSON, no other text.",
+      "expected_answer": "{\"colors\":[",
+      "scoring_type": "json_valid",
+      "weight": 1.0
+    },
+    {
+      "id": "format_2",
+      "category": "format",
+      "prompt": "Provide the days of the week as a comma-separated list. Use full names (Monday, Tuesday, etc.) and return only the list, nothing else.",
+      "expected_answer": "Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday",
+      "scoring_type": "format_check",
+      "weight": 1.0
+    },
+    {
+      "id": "format_3",
+      "category": "format",
+      "prompt": "Return a valid JSON object with two keys: 'name' set to 'test' and 'value' set to 42. Return only the JSON.",
+      "expected_answer": "{\"name\":\"test\",\"value\":42}",
+      "scoring_type": "json_valid",
+      "weight": 1.0
+    }
+  ]
+}
