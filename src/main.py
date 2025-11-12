@@ -159,20 +159,136 @@ def main():
     logger.info("LLM Inference Tester v0.1.0")
     logger.info("=" * 60)
 
-    # TODO: Implement main logic
-    logger.info("Configuration: %s", args.config)
-    logger.info("Models config: %s", args.models_config)
+    try:
+        # Import required modules
+        from config_manager import ConfigManager
+        from model_manager import ModelManager
+        from server_manager import ServerManager
+        from test_profiles import get_profile
 
-    if args.quick:
-        logger.info("Mode: Quick test (~1 hour)")
-    elif args.full:
-        logger.info("Mode: Full test (~2-4 hours)")
-    else:
-        logger.info("Mode: Default")
+        # Load configuration
+        logger.info("Loading configuration...")
+        config_mgr = ConfigManager(args.config, args.models_config)
+        config_mgr.load()
 
-    logger.warning("Implementation in progress - Phase 0 complete, Phase 1 next")
+        logger.info("Configuration loaded successfully")
+        logger.info("Test mode: %s", config_mgr.get("test_mode"))
 
-    return 0
+        # Override test mode if specified
+        if args.quick:
+            config_mgr.config["test_mode"] = "quick"
+            logger.info("Mode: Quick test (~1 hour)")
+        elif args.full:
+            config_mgr.config["test_mode"] = "full"
+            logger.info("Mode: Full test (~2-4 hours)")
+
+        # Initialize managers
+        model_dir = Path(config_mgr.get("model_dir"))
+        model_mgr = ModelManager(model_dir, config_mgr.get_models())
+
+        # Scan for existing models
+        logger.info("Scanning for models...")
+        model_mgr.scan_models()
+
+        # Get server configuration
+        server_path = Path(config_mgr.get("llama_cpp.server_path"))
+        ctx_size = config_mgr.get("llama_cpp.default_ctx_size")
+        server_mgr = ServerManager(server_path, default_ctx_size=ctx_size)
+
+        # For Phase 2 proof of concept: Test with first available model
+        # In future phases, this will iterate through the test matrix
+        models = config_mgr.get_models()
+        if not models:
+            logger.error("No models defined in configuration")
+            return 1
+
+        # Use first model at Q4_K_M (common sweet spot)
+        test_model = models[0]
+        test_quant = "Q4_K_M"
+
+        logger.info("=" * 60)
+        logger.info("Phase 2 Proof of Concept Test")
+        logger.info("Model: %s", test_model["name"])
+        logger.info("Quantization: %s", test_quant)
+        logger.info("=" * 60)
+
+        # Ensure model is available
+        logger.info("Ensuring model is available...")
+        try:
+            model_path = model_mgr.ensure_model(test_model["name"], test_quant)
+            logger.info("Model ready at: %s", model_path)
+        except Exception as e:
+            logger.error("Failed to get model: %s", e)
+            logger.info("This is expected if the model hasn't been downloaded yet.")
+            logger.info("In a full implementation, the tool would download it automatically.")
+            return 1
+
+        # Start server
+        logger.info("Starting llama.cpp server...")
+        try:
+            connection = server_mgr.start(model_path)
+            logger.info("Server started at: %s", connection.url)
+
+            # Run interactive profile test
+            logger.info("Running interactive test profile...")
+            profile = get_profile("interactive")
+
+            # Get profile config
+            profile_config = {
+                "thresholds": config_mgr.get_thresholds("interactive")
+            }
+
+            # Run test
+            result = profile.run(connection.url, profile_config)
+
+            # Display results
+            logger.info("=" * 60)
+            logger.info("TEST RESULTS")
+            logger.info("=" * 60)
+            logger.info("Profile: %s", result.profile)
+            logger.info("Status: %s", result.status)
+            logger.info("Passed: %s", result.passed)
+            logger.info("")
+            logger.info("Metrics:")
+            for key, value in result.metrics.items():
+                logger.info("  %s: %.2f", key, value)
+
+            if result.interpretation:
+                logger.info("")
+                logger.info("Interpretations:")
+                for key, interp in result.interpretation.items():
+                    logger.info("  %s: %s", key, interp)
+
+            logger.info("=" * 60)
+
+            if result.passed:
+                logger.info("✓ Test PASSED")
+                return_code = 0
+            else:
+                logger.warning("✗ Test FAILED")
+                return_code = 1
+
+        finally:
+            # Always stop the server
+            logger.info("Stopping server...")
+            server_mgr.stop()
+            logger.info("Server stopped")
+
+        logger.info("")
+        logger.info("Phase 2 proof of concept complete!")
+        logger.info("Next: Implement full matrix testing and all profiles")
+
+        return return_code
+
+    except FileNotFoundError as e:
+        logger.error("Configuration error: %s", e)
+        logger.error("Please ensure config.yaml and models.yaml exist")
+        logger.error("You can copy config.example.yaml and models.example.yaml to get started")
+        return 1
+
+    except Exception as e:
+        logger.error("Unexpected error: %s", e, exc_info=True)
+        return 1
 
 
 if __name__ == "__main__":
