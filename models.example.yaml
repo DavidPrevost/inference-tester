@@ -15,8 +15,24 @@ models:
   # ========================================================================
   # 1B Models - Smallest, fastest, good for testing infrastructure
   # ========================================================================
+  - name: "Llama-3.2-1B-Instruct"
+    size: "1B"
+    size_b: 1
+    repo: "bartowski/Llama-3.2-1B-Instruct-GGUF"
+    files:
+      Q2_K: "Llama-3.2-1B-Instruct-Q2_K.gguf"
+      Q3_K_M: "Llama-3.2-1B-Instruct-Q3_K_M.gguf"
+      Q4_K_M: "Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+      Q5_K_M: "Llama-3.2-1B-Instruct-Q5_K_M.gguf"
+      Q6_K: "Llama-3.2-1B-Instruct-Q6_K.gguf"
+      Q8_0: "Llama-3.2-1B-Instruct-Q8_0.gguf"
+    metadata:
+      context_length: 131072
+      notes: "Ultra-light Llama 3.2, perfect for edge devices"
+
   - name: "Qwen2.5-1.5B-Instruct"
     size: "1B"
+    size_b: 1.5
     repo: "Qwen/Qwen2.5-1.5B-Instruct-GGUF"
     files:
       Q2_K: "qwen2.5-1.5b-instruct-q2_k.gguf"
@@ -27,27 +43,63 @@ models:
       Q8_0: "qwen2.5-1.5b-instruct-q8_0.gguf"
     metadata:
       context_length: 131072
-      notes: "Good small model with large context window"
+      notes: "Excellent small model with large context window"
+
+  - name: "SmolLM2-1.7B-Instruct"
+    size: "1B"
+    size_b: 1.7
+    repo: "bartowski/SmolLM2-1.7B-Instruct-GGUF"
+    files:
+      Q3_K_M: "SmolLM2-1.7B-Instruct-Q3_K_M.gguf"
+      Q4_K_M: "SmolLM2-1.7B-Instruct-Q4_K_M.gguf"
+      Q5_K_M: "SmolLM2-1.7B-Instruct-Q5_K_M.gguf"
+      Q6_K: "SmolLM2-1.7B-Instruct-Q6_K.gguf"
+      Q8_0: "SmolLM2-1.7B-Instruct-Q8_0.gguf"
+    metadata:
+      context_length: 8192
+      notes: "Optimized specifically for edge devices and on-device AI"
+
+  # ========================================================================
+  # 2B Models - Compact and efficient
+  # ========================================================================
+  - name: "Gemma-2-2B-Instruct"
+    size: "2B"
+    size_b: 2
+    repo: "bartowski/gemma-2-2b-it-GGUF"
+    files:
+      Q3_K_M: "gemma-2-2b-it-Q3_K_M.gguf"
+      Q4_K_M: "gemma-2-2b-it-Q4_K_M.gguf"
+      Q5_K_M: "gemma-2-2b-it-Q5_K_M.gguf"
+      Q6_K: "gemma-2-2b-it-Q6_K.gguf"
+      Q8_0: "gemma-2-2b-it-Q8_0.gguf"
+    metadata:
+      context_length: 8192
+      notes: "Google's efficient Gemma 2 model"
+
+  - name: "Phi-2"
+    size: "2B"
+    size_b: 2.7
+    repo: "bartowski/phi-2-GGUF"
+    files:
+      Q3_K_M: "phi-2-Q3_K_M.gguf"
+      Q4_K_M: "phi-2-Q4_K_M.gguf"
+      Q5_K_M: "phi-2-Q5_K_M.gguf"
+      Q6_K: "phi-2-Q6_K.gguf"
+      Q8_0: "phi-2-Q8_0.gguf"
+    metadata:
+      context_length: 2048
+      notes: "Microsoft Phi-2, excellent reasoning for its size"
 
   # ========================================================================
   # 3B Models - Balanced size, good performance-to-resource ratio
   # ========================================================================
-  - name: "Phi-3.5-mini-instruct"
-    size: "3B"
-    repo: "microsoft/Phi-3.5-mini-instruct-gguf"
-    files:
-      Q4_K_M: "Phi-3.5-mini-instruct-q4.gguf"
-      Q5_K_M: "Phi-3.5-mini-instruct-q5.gguf"
-      Q6_K: "Phi-3.5-mini-instruct-q6.gguf"
-      Q8_0: "Phi-3.5-mini-instruct-q8.gguf"
-    metadata:
-      context_length: 128000
-      notes: "Microsoft Phi 3.5, excellent quality for size"
-
   - name: "Llama-3.2-3B-Instruct"
     size: "3B"
-    repo: "lmstudio-community/Llama-3.2-3B-Instruct-GGUF"
+    size_b: 3
+    repo: "bartowski/Llama-3.2-3B-Instruct-GGUF"
     files:
+      Q2_K: "Llama-3.2-3B-Instruct-Q2_K.gguf"
+      Q3_K_M: "Llama-3.2-3B-Instruct-Q3_K_M.gguf"
       Q4_K_M: "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
       Q5_K_M: "Llama-3.2-3B-Instruct-Q5_K_M.gguf"
       Q6_K: "Llama-3.2-3B-Instruct-Q6_K.gguf"
@@ -56,48 +108,97 @@ models:
       context_length: 131072
       notes: "Latest Llama 3.2, good general purpose"
 
+  - name: "Qwen2.5-3B-Instruct"
+    size: "3B"
+    size_b: 3
+    repo: "Qwen/Qwen2.5-3B-Instruct-GGUF"
+    files:
+      Q2_K: "qwen2.5-3b-instruct-q2_k.gguf"
+      Q3_K_M: "qwen2.5-3b-instruct-q3_k_m.gguf"
+      Q4_K_M: "qwen2.5-3b-instruct-q4_k_m.gguf"
+      Q5_K_M: "qwen2.5-3b-instruct-q5_k_m.gguf"
+      Q6_K: "qwen2.5-3b-instruct-q6_k.gguf"
+      Q8_0: "qwen2.5-3b-instruct-q8_0.gguf"
+    metadata:
+      context_length: 131072
+      notes: "Qwen 2.5 3B, strong multilingual performance"
+
+  - name: "Phi-3.5-mini-instruct"
+    size: "3B"
+    size_b: 3.8
+    repo: "bartowski/Phi-3.5-mini-instruct-GGUF"
+    files:
+      Q3_K_M: "Phi-3.5-mini-instruct-Q3_K_M.gguf"
+      Q4_K_M: "Phi-3.5-mini-instruct-Q4_K_M.gguf"
+      Q5_K_M: "Phi-3.5-mini-instruct-Q5_K_M.gguf"
+      Q6_K: "Phi-3.5-mini-instruct-Q6_K.gguf"
+      Q8_0: "Phi-3.5-mini-instruct-Q8_0.gguf"
+    metadata:
+      context_length: 128000
+      notes: "Microsoft Phi 3.5, excellent quality for size"
+
   # ========================================================================
   # 7B Models - Popular size, good balance of capability and requirements
   # ========================================================================
-  - name: "Llama-3.2-7B-Instruct"
+  - name: "Llama-3.1-8B-Instruct"
     size: "7B"
-    repo: "lmstudio-community/Llama-3.2-7B-Instruct-GGUF"
+    size_b: 8
+    repo: "bartowski/Meta-Llama-3.1-8B-Instruct-GGUF"
     files:
-      Q2_K: "Llama-3.2-7B-Instruct-Q2_K.gguf"
-      Q3_K_M: "Llama-3.2-7B-Instruct-Q3_K_M.gguf"
-      Q4_K_M: "Llama-3.2-7B-Instruct-Q4_K_M.gguf"
-      Q5_K_M: "Llama-3.2-7B-Instruct-Q5_K_M.gguf"
-      Q6_K: "Llama-3.2-7B-Instruct-Q6_K.gguf"
-      Q8_0: "Llama-3.2-7B-Instruct-Q8_0.gguf"
+      Q2_K: "Meta-Llama-3.1-8B-Instruct-Q2_K.gguf"
+      Q3_K_M: "Meta-Llama-3.1-8B-Instruct-Q3_K_M.gguf"
+      Q4_K_M: "Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
+      Q5_K_M: "Meta-Llama-3.1-8B-Instruct-Q5_K_M.gguf"
+      Q6_K: "Meta-Llama-3.1-8B-Instruct-Q6_K.gguf"
+      Q8_0: "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
     metadata:
       context_length: 131072
-      notes: "Latest Llama 3.2 7B, versatile and capable"
+      notes: "Industry standard 8B model, excellent all-around"
+
+  - name: "Qwen2.5-7B-Instruct"
+    size: "7B"
+    size_b: 7
+    repo: "Qwen/Qwen2.5-7B-Instruct-GGUF"
+    files:
+      Q2_K: "qwen2.5-7b-instruct-q2_k.gguf"
+      Q3_K_M: "qwen2.5-7b-instruct-q3_k_m.gguf"
+      Q4_K_M: "qwen2.5-7b-instruct-q4_k_m.gguf"
+      Q5_K_M: "qwen2.5-7b-instruct-q5_k_m.gguf"
+      Q6_K: "qwen2.5-7b-instruct-q6_k.gguf"
+      Q8_0: "qwen2.5-7b-instruct-q8_0.gguf"
+    metadata:
+      context_length: 131072
+      notes: "Qwen 2.5 7B, excellent reasoning and multilingual"
 
   - name: "Mistral-7B-Instruct-v0.3"
     size: "7B"
-    repo: "TheBloke/Mistral-7B-Instruct-v0.3-GGUF"
+    size_b: 7
+    repo: "bartowski/Mistral-7B-Instruct-v0.3-GGUF"
     files:
-      Q4_K_M: "mistral-7b-instruct-v0.3.Q4_K_M.gguf"
-      Q5_K_M: "mistral-7b-instruct-v0.3.Q5_K_M.gguf"
-      Q6_K: "mistral-7b-instruct-v0.3.Q6_K.gguf"
-      Q8_0: "mistral-7b-instruct-v0.3.Q8_0.gguf"
+      Q3_K_M: "Mistral-7B-Instruct-v0.3-Q3_K_M.gguf"
+      Q4_K_M: "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf"
+      Q5_K_M: "Mistral-7B-Instruct-v0.3-Q5_K_M.gguf"
+      Q6_K: "Mistral-7B-Instruct-v0.3-Q6_K.gguf"
+      Q8_0: "Mistral-7B-Instruct-v0.3-Q8_0.gguf"
     metadata:
       context_length: 32768
       notes: "Mistral v0.3, known for good performance"
 
   # ========================================================================
-  # 13B Models - Larger, more capable, higher resource requirements
+  # 12B+ Models - Larger models for stress testing (optional)
   # ========================================================================
-  - name: "Llama-2-13B-Chat"
-    size: "13B"
-    repo: "TheBloke/Llama-2-13B-Chat-GGUF"
+  - name: "Mistral-Nemo-Instruct-2407"
+    size: "12B"
+    size_b: 12
+    repo: "bartowski/Mistral-Nemo-Instruct-2407-GGUF"
     files:
-      Q3_K_M: "llama-2-13b-chat.Q3_K_M.gguf"
-      Q4_K_M: "llama-2-13b-chat.Q4_K_M.gguf"
-      Q5_K_M: "llama-2-13b-chat.Q5_K_M.gguf"
+      Q3_K_M: "Mistral-Nemo-Instruct-2407-Q3_K_M.gguf"
+      Q4_K_M: "Mistral-Nemo-Instruct-2407-Q4_K_M.gguf"
+      Q5_K_M: "Mistral-Nemo-Instruct-2407-Q5_K_M.gguf"
+      Q6_K: "Mistral-Nemo-Instruct-2407-Q6_K.gguf"
     metadata:
-      context_length: 4096
-      notes: "Baseline 13B for testing resource limits"
+      context_length: 131072
+      notes: "12B model, good for testing upper limits of edge devices"
 
 # ============================================================================
 # Test Mode Configurations

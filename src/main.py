@@ -191,6 +191,18 @@ For more help and troubleshooting, see TROUBLESHOOTING.md
     )
 
     parser.add_argument(
+        "--skip-download",
+        action="store_true",
+        help="Skip automatic model downloading (will fail if models missing)"
+    )
+
+    parser.add_argument(
+        "--auto-download",
+        action="store_true",
+        help="Automatically download missing models without prompting"
+    )
+
+    parser.add_argument(
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
@@ -258,6 +270,29 @@ def main():
         # Scan for existing models
         logger.info("Scanning for models...")
         model_mgr.scan_models()
+
+        # Check for missing models and offer to download
+        if not args.skip_download:
+            from model_downloader import ModelDownloader
+            downloader = ModelDownloader(model_dir)
+            missing_models = downloader.check_missing_models(config_mgr.get_models())
+
+            if missing_models:
+                logger.info("Found %d missing model files", len(missing_models))
+
+                # Auto-download unless --no-download flag is present
+                prompt_user = not args.auto_download
+                results = downloader.download_missing_models(
+                    missing_models,
+                    prompt_user=prompt_user
+                )
+
+                # Rescan after downloads
+                if results:
+                    logger.info("Rescanning models after downloads...")
+                    model_mgr.scan_models()
+            else:
+                logger.info("All configured models are present")
 
         # Get server configuration
         server_path = Path(config_mgr.get("llama_cpp.server_path"))

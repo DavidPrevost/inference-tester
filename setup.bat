@@ -112,9 +112,12 @@ echo Next steps:
 echo   1. Edit config.yaml to configure your llama.cpp server path
 echo   2. Edit models.yaml to select which models to test
 echo   3. Download llama.cpp server from https://github.com/ggerganov/llama.cpp
-echo   4. Place your GGUF model files in the models/ directory
-echo   5. Run: run.bat --quick    (for a quick test)
+echo   4. Run: run.bat --quick    (for a quick test)
 echo      or:  run.bat --full     (for comprehensive testing)
+echo.
+echo NOTE: Model files will be downloaded automatically from HuggingFace
+echo       when you run tests. You'll be prompted before downloading.
+echo       To skip prompts, use: run.bat --auto-download --quick
 echo.
 echo To activate the virtual environment manually:
 echo   venv\Scripts\activate.bat
