@@ -370,7 +370,7 @@ def main():
             logger.info("Best performing configurations:")
             for config in summary['best_configs']:
                 logger.info(
-                    f"  ✓ {config['model']} {config['quant']} - "
+                    f"  => {config['model']} {config['quant']} - "
                     f"{config['profile']}: {config['status']}"
                 )
 
@@ -403,30 +403,30 @@ def main():
                 "test_runs": test_runs_dict,
                 "recommendations": recommendations
             }, f, indent=2)
-        logger.info(f"  ✓ JSON: {results_file}")
+        logger.info(f"  => JSON: {results_file}")
 
         # Save CSV results
         logger.info("Saving CSV results...")
         csv_file = output_dir / "results.csv"
         CSVFormatter.write_results(test_runs_dict, csv_file)
-        logger.info(f"  ✓ CSV: {csv_file}")
+        logger.info(f"  => CSV: {csv_file}")
 
         # Save CSV summary
         summary_csv = output_dir / "summary.csv"
         CSVFormatter.write_summary(summary, summary_csv)
-        logger.info(f"  ✓ Summary CSV: {summary_csv}")
+        logger.info(f"  => Summary CSV: {summary_csv}")
 
         # Save best configs CSV
         if summary.get('best_configs'):
             best_csv = output_dir / "best_configs.csv"
             CSVFormatter.write_best_configs(summary['best_configs'], best_csv)
-            logger.info(f"  ✓ Best Configs CSV: {best_csv}")
+            logger.info(f"  => Best Configs CSV: {best_csv}")
 
         # Generate HTML report
         logger.info("Generating HTML report...")
         html_file = output_dir / "report.html"
         HTMLGenerator.generate_report(test_runs_dict, summary, recommendations, html_file)
-        logger.info(f"  ✓ HTML Report: {html_file}")
+        logger.info(f"  => HTML Report: {html_file}")
 
         # Display recommendations
         if recommendations:

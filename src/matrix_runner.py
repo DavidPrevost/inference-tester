@@ -379,8 +379,7 @@ class MatrixRunner:
             logger.info(f"Starting llama.cpp server (ctx_size={ctx_size})...")
             connection = self.server_mgr.start(
                 model_path=model_path,
-                ctx_size=ctx_size,
-                timeout=300  # 5 minute timeout
+                ctx_size=ctx_size
             )
 
             if not connection:

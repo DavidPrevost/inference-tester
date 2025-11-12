@@ -100,7 +100,7 @@ class ModelDownloader:
                 resume_download=True
             )
 
-            logger.info(f"✓ Successfully downloaded: {filename}")
+            logger.info(f"Successfully downloaded: {filename}")
             return True
 
         except HfHubHTTPError as e:
